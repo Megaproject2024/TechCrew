@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediRoute — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5_dnKvgJ60LT6xrF2HheBcTdWE8oBR_Y&callback=initMap"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,13 +14,14 @@
   --green:#2f9e44;--green-bg:#ebfbee;--green-bd:#b2f2bb;
   --amber:#e67700;--amber-bg:#fff9db;--amber-bd:#ffec99;
   --blue:#1971c2;--blue-bg:#e7f5ff;--blue-bd:#a5d8ff;
+  --govt:#6741d9;--govt-bg:#f3f0ff;--govt-bd:#d0bfff;
   --bg:#f1f3f5;--card:#fff;--border:#dee2e6;--border2:#ced4da;
   --text:#212529;--text2:#495057;--text3:#868e96;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
   --sidebar:220px;--r:10px;
   --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.05);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden}
 
 /* ── SIDEBAR ── */
 .sb{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;z-index:100;overflow-y:auto}
@@ -39,22 +41,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sb-role{font-family:var(--mono);font-size:10px;color:var(--green)}
 
 /* ── MAIN ── */
-.main{margin-left:var(--sidebar);flex:1;padding:20px 24px;min-height:100vh}
-
-/* Header */
+.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));padding:20px 24px;min-height:100vh;box-sizing:border-box}
 .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .page-hd h1{font-size:22px;font-weight:800}
 .page-hd h1 span{color:var(--red)}
 .btn-logout{padding:7px 14px;background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s}
 .btn-logout:hover{background:var(--red-bd)}
 
-/* Stat row */
+/* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
 .stat-ic{font-size:22px;flex-shrink:0}
 .stat-val{font-size:22px;font-weight:800;line-height:1}
 .stat-lbl{font-size:11px;color:var(--text3);margin-top:2px}
-.c-red{color:var(--red)}.c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-blue{color:var(--blue)}
+.c-red{color:var(--red)}.c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-blue{color:var(--blue)}.c-govt{color:var(--govt)}
 
 /* Ambulance bar */
 .amb-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow);flex-wrap:wrap}
@@ -69,10 +69,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .amb-info{display:flex;gap:16px;flex-shrink:0;font-family:var(--mono);font-size:11px;color:var(--text3)}
 .amb-info strong{color:var(--amber)}
 
-/* Search section */
+/* Search */
 .section-title{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .badge-live{font-family:var(--mono);font-size:10px;padding:3px 8px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);border-radius:20px}
-
 .em-types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .em{border:1.5px solid var(--border);border-radius:8px;padding:11px 8px;cursor:pointer;text-align:center;background:var(--bg);transition:all .12s}
 .em:hover{border-color:var(--border2);background:#fff}
@@ -80,7 +79,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .em .ei{font-size:22px;margin-bottom:4px}
 .em .en{font-size:12px;font-weight:700;color:var(--text)}
 .em .es{font-size:10.5px;color:var(--text3)}
-
 .search-row{display:grid;grid-template-columns:1fr 1fr 160px;gap:10px;align-items:flex-end;margin-bottom:14px}
 .fld label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .fld input,.fld select{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13.5px;color:var(--text);background:var(--bg);transition:border-color .12s;appearance:none}
@@ -91,18 +89,33 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-find.ld .flbl{display:none}.btn-find.ld .spin{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Results */
+/* ── CATEGORY TABS ── */
 .results{display:none;margin-bottom:16px}
 .results.on{display:block}
+.cat-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.cat-tab{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--text2)}
+.cat-tab:hover{border-color:var(--border2);background:#fff}
+.cat-tab.on-all{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.cat-tab.on-govt{border-color:var(--govt);background:var(--govt-bg);color:var(--govt)}
+.cat-tab.on-priv{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.cat-count{font-family:var(--mono);font-size:10px;margin-left:4px;opacity:.7}
+.type-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:12px;font-weight:700}
+.tb-govt{background:var(--govt-bg);color:var(--govt);border:1px solid var(--govt-bd)}
+.tb-priv{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd)}
+
+/* Hospital result cards */
 .res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-.hosp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .15s}
-.hosp-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.hosp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s;cursor:pointer}
+.hosp-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);transform:translateY(-2px)}
+.hosp-card.selected{border-color:var(--red);box-shadow:0 0 0 2px var(--red-bd),0 4px 16px rgba(224,49,49,.15)}
 .hc-top{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .hc-rank{font-family:var(--mono);font-size:20px}
 .hc-name{font-size:13.5px;font-weight:700;flex:1}
+.hc-tags{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
 .hc-tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px}
 .tag-fast{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
 .tag-equip{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.tag-icu{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd)}
 .tag-bal{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
 .hc-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0}
 .hc-stat{padding:9px 10px;border-right:1px solid var(--border);text-align:center}
@@ -111,11 +124,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .hc-sl{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
 .hc-sv.ok{color:var(--green)}.hc-sv.warn{color:var(--red)}
 .hc-ai{padding:8px 14px;background:var(--amber-bg);border-top:1px solid var(--amber-bd);font-size:11.5px;color:var(--amber);display:flex;align-items:center;gap:6px}
+.hc-rec{padding:6px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
 .sev{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;font-weight:700}
 .sev-HIGH{background:var(--red-bg);color:var(--red)}.sev-MEDIUM{background:var(--amber-bg);color:var(--amber)}.sev-LOW{background:var(--green-bg);color:var(--green)}
+
+/* Route map */
 .map-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
-.map-hd{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
-#dashMap{height:280px;width:100%}
+.map-hd{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.map-hd-left{display:flex;align-items:center;gap:6px}
+.route-info{display:flex;gap:10px;font-family:var(--mono);font-size:11px;color:var(--text3)}
+.route-info span strong{color:var(--red)}
+#dashMap{height:320px;width:100%}
+.map-hint{padding:8px 14px;background:var(--blue-bg);border-top:1px solid var(--blue-bd);font-size:11.5px;color:var(--blue);display:flex;align-items:center;gap:6px}
 
 /* Bottom row */
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -138,7 +158,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .qlink:hover .qlink-arr{color:var(--red)}
 
 /* Toast */
-.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-width:280px}
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-width:300px}
 .toast.on{transform:translateX(0)}.toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
 .toast-msg{font-size:13px;font-weight:600}
 
@@ -148,15 +168,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .ov-ring{width:40px;height:40px;border:3px solid var(--red-bd);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
 .ov-lbl{font-size:13px;font-weight:600;color:var(--text3)}
 
-footer{background:var(--card);border-top:1px solid var(--border);padding:12px 24px;font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:var(--sidebar)}
+footer{background:var(--card);border-top:1px solid var(--border);padding:12px 24px;font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:var(--sidebar);width:calc(100% - var(--sidebar));box-sizing:border-box}
 footer em{color:var(--red);font-style:normal;font-weight:700}
 
 @media(max-width:900px){
   :root{--sidebar:0px}
   .sb{transform:translateX(-100%);transition:transform .25s}
   .sb.open{transform:translateX(0)}
-  .main{margin-left:0;padding:16px}
-  footer{margin-left:0}
+  .main{margin-left:0;width:100%;padding:16px}
+  footer{margin-left:0;width:100%}
   .stats{grid-template-columns:1fr 1fr}
   .em-types{grid-template-columns:1fr 1fr}
   .search-row{grid-template-columns:1fr 1fr}
@@ -172,10 +192,7 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
 <div class="mob-ov" id="mobOv" onclick="closeSb()"></div>
 
 <aside class="sb" id="sb">
-  <a class="sb-logo" href="#">
-    <div class="sb-logo-ic">🚑</div>
-    <div class="sb-logo-tx">Medi<em>Route</em></div>
-  </a>
+  <a class="sb-logo" href="#"><div class="sb-logo-ic">🚑</div><div class="sb-logo-tx">Medi<em>Route</em></div></a>
   <div class="sb-sec">Navigation</div>
   <a href="#" class="nav-a on"><span class="ic">📊</span> Dashboard</a>
   <a href="#findSection" class="nav-a" onclick="closeSb()"><span class="ic">🔍</span> Find Hospital</a>
@@ -185,10 +202,7 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
   <a href="#" class="nav-a" onclick="doLogout()"><span class="ic">🚪</span> Logout</a>
   <div class="sb-user" style="margin-top:16px">
     <div class="sb-av" id="uAv">U</div>
-    <div>
-      <div class="sb-name" id="uEmail">User</div>
-      <div class="sb-role">Patient Access</div>
-    </div>
+    <div><div class="sb-name" id="uEmail">User</div><div class="sb-role">Patient Access</div></div>
   </div>
 </aside>
 
@@ -201,18 +215,15 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
   <!-- Stats -->
   <div class="stats">
     <div class="stat"><div class="stat-ic">🏥</div><div><div class="stat-val c-red" id="stHosp">—</div><div class="stat-lbl">Hospitals Live</div></div></div>
+    <div class="stat"><div class="stat-ic">🏛️</div><div><div class="stat-val c-govt" id="stGovt">—</div><div class="stat-lbl">Govt Hospitals</div></div></div>
     <div class="stat"><div class="stat-ic">🛏️</div><div><div class="stat-val c-green" id="stIcu">—</div><div class="stat-lbl">Total ICU Beds</div></div></div>
     <div class="stat"><div class="stat-ic">👨‍⚕️</div><div><div class="stat-val c-blue" id="stDoc">—</div><div class="stat-lbl">Doctors Available</div></div></div>
-    <div class="stat"><div class="stat-ic">⚡</div><div><div class="stat-val c-amber">&lt;2s</div><div class="stat-lbl">AI Routing Speed</div></div></div>
   </div>
 
   <!-- Ambulance tracker -->
   <div class="amb-bar" id="ambSection">
     <div class="amb-label"><div class="live-dot"></div> 🚑 Ambulance Dispatch</div>
-    <div class="amb-road">
-      <div class="amb-truck">🚑</div>
-      <div class="amb-hosp">🏥</div>
-    </div>
+    <div class="amb-road"><div class="amb-truck">🚑</div><div class="amb-hosp">🏥</div></div>
     <div class="amb-info">
       <span>Status: <strong id="ambSt">Standby</strong></span>
       <span>ETA: <strong id="ambEt">—</strong></span>
@@ -246,11 +257,28 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
 
   <!-- Results -->
   <div class="results" id="results">
-    <div class="section-title">🏥 Hospital Matches <span id="resCnt" style="font-size:11px;font-weight:500;color:var(--text3)"></span></div>
+    <!-- Category tabs -->
+    <div class="cat-tabs">
+      <div class="section-title" style="margin-bottom:0">🏥 Hospital Matches</div>
+      <button class="cat-tab on-all" id="tabAll" onclick="showCat('all')">All <span class="cat-count" id="cntAll"></span></button>
+      <button class="cat-tab" id="tabGovt" onclick="showCat('govt')">🏛️ Government <span class="cat-count" id="cntGovt"></span></button>
+      <button class="cat-tab" id="tabPriv" onclick="showCat('priv')">🏥 Private <span class="cat-count" id="cntPriv"></span></button>
+      <span id="resCnt" style="font-size:11px;font-weight:500;color:var(--text3);margin-left:auto"></span>
+    </div>
+
     <div class="res-grid" id="resGrid"></div>
+
+    <!-- Uber-like route map -->
     <div class="map-box">
-      <div class="map-hd"><span>📡</span> Live Route Map</div>
+      <div class="map-hd">
+        <div class="map-hd-left"><span>📡</span> Live Route — <span id="routeDestName" style="color:var(--red)">Select a hospital</span></div>
+        <div class="route-info">
+          <span>🕐 ETA <strong id="routeEta">—</strong></span>
+          <span>📍 Dist <strong id="routeDist">—</strong></span>
+        </div>
+      </div>
       <div id="dashMap"></div>
+      <div class="map-hint">💡 Click any hospital card above to show the route from your current location</div>
     </div>
   </div>
 
@@ -271,7 +299,7 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
   </div>
 </main>
 
-<div class="ov" id="ov"><div class="ov-ring"></div><div class="ov-lbl">Finding best hospitals…</div></div>
+<div class="ov" id="ov"><div class="ov-ring"></div><div class="ov-lbl">AI routing hospitals…</div></div>
 <div class="toast" id="toast"><span id="tIc"></span><span class="toast-msg" id="tMsg"></span></div>
 <footer>Medi<em>Route</em> · User Dashboard · Smart Emergency Routing</footer>
 
@@ -292,6 +320,7 @@ window.doLogout=()=>signOut(auth).then(()=>{localStorage.clear();location.href='
 onValue(ref(db,'hospitals'),snap=>{
   const arr=Object.values(snap.val()||{});
   document.getElementById('stHosp').textContent=arr.length||0;
+  document.getElementById('stGovt').textContent=arr.filter(h=>h.hospital_type==='govt').length||0;
   document.getElementById('stIcu').textContent=arr.reduce((s,h)=>s+(h.icu_beds||0),0);
   document.getElementById('stDoc').textContent=arr.reduce((s,h)=>s+(h.doctors||0),0);
   if(arr.length){
@@ -303,56 +332,229 @@ onValue(ref(db,'hospitals'),snap=>{
 </script>
 
 <script>
-let selEm='accident',gMap,gDS,gDR;
+/* ═══════════════════════════════════════════════════
+   FREE STACK: Leaflet.js + OpenStreetMap tiles
+                + OpenRouteService (free routing)
+   No billing. No Google Maps API needed.
+   ═══════════════════════════════════════════════════ */
+
+// ── Free ORS API key (public demo key – replace with yours from openrouteservice.org) ──
+const ORS_KEY = '5b3ce3597851110001cf62487b9b6e0a2f104f3d8a1e3e4e58d8adf5';
+
+let selEm='accident', leafMap=null, userPos=null, routeLayer=null, markerLayer=null;
+let allResults=[], currentCat='all';
+
+/* ── helpers ── */
 function pickEm(el){document.querySelectorAll('.em').forEach(e=>e.classList.remove('on'));el.classList.add('on');selEm=el.dataset.val;}
 function toast(msg,type){const t=document.getElementById('toast');t.className='toast '+(type==='ok'?'ok':'err');document.getElementById('tIc').textContent=type==='ok'?'✅':'🚨';document.getElementById('tMsg').textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),3500);}
-function initMap(){
-  gMap=new google.maps.Map(document.getElementById('dashMap'),{center:{lat:18.52,lng:73.85},zoom:12,disableDefaultUI:true,zoomControl:true,styles:[{featureType:'poi',stylers:[{visibility:'off'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#f5f5f5'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#ddeaf0'}]},{elementType:'labels.text.fill',stylers:[{color:'#868e96'}]}]});
-  gDS=new google.maps.DirectionsService();
-  gDR=new google.maps.DirectionsRenderer({suppressMarkers:false,polylineOptions:{strokeColor:'#E03131',strokeWeight:4}});
-  gDR.setMap(gMap);
+
+/* ── Custom SVG markers ── */
+function makeIcon(color, size=14){
+  return L.divIcon({
+    className:'',
+    html:`<svg width="${size+6}" height="${size+6}" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="9" fill="${color}" stroke="white" stroke-width="2.5"/>
+    </svg>`,
+    iconAnchor:[(size+6)/2,(size+6)/2]
+  });
 }
-window.initMap=initMap;
+function userIcon(){
+  return L.divIcon({
+    className:'',
+    html:`<svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="11" cy="11" r="7" fill="#1971c2" stroke="white" stroke-width="3"/>
+      <circle cx="11" cy="11" r="11" fill="#1971c2" fill-opacity="0.18"/>
+    </svg>`,
+    iconAnchor:[11,11]
+  });
+}
+
+/* ── Init Leaflet map ── */
+function initMap(){
+  leafMap = L.map('dashMap',{zoomControl:true,attributionControl:true}).setView([18.52,73.85],12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom:19
+  }).addTo(leafMap);
+
+  markerLayer = L.layerGroup().addTo(leafMap);
+
+  // Get user location
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      userPos={lat:p.coords.latitude,lng:p.coords.longitude};
+      L.marker([userPos.lat,userPos.lng],{icon:userIcon(),zIndexOffset:1000})
+        .addTo(markerLayer).bindPopup('📍 Your location');
+      leafMap.setView([userPos.lat,userPos.lng],13);
+    },()=>{});
+  }
+}
+
+/* ── Uber-style route via OpenRouteService ── */
+async function routeTo(h){
+  if(!leafMap){toast('Map loading…','err');return;}
+
+  const origin = userPos || {lat:18.52,lng:73.85};
+  const dest   = {lat:h.lat, lng:h.lng};
+
+  // Update header immediately
+  document.getElementById('routeDestName').textContent = h.name;
+  document.getElementById('routeEta').textContent  = '…';
+  document.getElementById('routeDist').textContent = '…';
+
+  // Update ambulance bar
+  document.getElementById('ambSt').textContent = h.name;
+  document.getElementById('ambDs').textContent = h.distance+' km';
+  document.getElementById('ambEt').textContent = '~'+Math.ceil(h.distance*3)+' min';
+
+  // Remove old route
+  if(routeLayer){leafMap.removeLayer(routeLayer);routeLayer=null;}
+
+  try{
+    const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':ORS_KEY},
+      body:JSON.stringify({coordinates:[[origin.lng,origin.lat],[dest.lng,dest.lat]]})
+    });
+    const data = await res.json();
+
+    if(data.features && data.features.length){
+      const feature  = data.features[0];
+      const props    = feature.properties.segments[0];
+      const distKm   = (props.distance/1000).toFixed(1);
+      const durMin   = Math.ceil(props.duration/60);
+
+      // Draw animated route line
+      routeLayer = L.geoJSON(feature,{
+        style:{color:'#E03131',weight:5,opacity:0.92,lineJoin:'round',lineCap:'round'}
+      }).addTo(leafMap);
+
+      leafMap.fitBounds(routeLayer.getBounds(),{padding:[32,32]});
+
+      document.getElementById('routeEta').textContent  = durMin+' min';
+      document.getElementById('routeDist').textContent = distKm+' km';
+      document.getElementById('ambEt').textContent = durMin+' min';
+      document.getElementById('ambDs').textContent = distKm+' km';
+    }else{
+      throw new Error('no route');
+    }
+  }catch(e){
+    // Fallback: straight-line arrow
+    routeLayer = L.polyline([[origin.lat,origin.lng],[dest.lat,dest.lng]],{
+      color:'#E03131',weight:4,opacity:0.7,dashArray:'10,8'
+    }).addTo(leafMap);
+    leafMap.fitBounds([[origin.lat,origin.lng],[dest.lat,dest.lng]],{padding:[40,40]});
+    const estMin = Math.ceil(h.distance*3);
+    document.getElementById('routeEta').textContent  = '~'+estMin+' min';
+    document.getElementById('routeDist').textContent = h.distance+' km';
+  }
+}
+
+/* ── Render hospital cards + map markers ── */
+function renderCards(list){
+  const grid=document.getElementById('resGrid'); grid.innerHTML='';
+  markerLayer && markerLayer.clearLayers();
+
+  // Re-add user marker
+  if(userPos){
+    L.marker([userPos.lat,userPos.lng],{icon:userIcon(),zIndexOffset:1000})
+      .addTo(markerLayer).bindPopup('📍 Your location');
+  }
+
+  const tm={'Fastest':'tag-fast','Most Equipped':'tag-equip','ICU Available':'tag-icu','Balanced':'tag-bal'};
+  const em=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'];
+
+  list.forEach((h,i)=>{
+    const isGovt = h.hospital_type==='govt';
+    const typeBadge = isGovt
+      ?'<span class="type-badge tb-govt">🏛️ Govt</span>'
+      :'<span class="type-badge tb-priv">🏥 Private</span>';
+
+    const card=document.createElement('div');
+    card.className='hosp-card';
+    card.innerHTML=`
+      <div class="hc-top">
+        <div class="hc-rank">${em[i]||'🏥'}</div>
+        <div class="hc-name">${h.name}</div>
+        <div class="hc-tags">${typeBadge}<span class="hc-tag ${tm[h.ai?.tag]||'tag-bal'}">${h.ai?.tag||'Balanced'}</span></div>
+      </div>
+      <div class="hc-stats">
+        <div class="hc-stat"><div class="hc-sv ${h.icu_beds>5?'ok':h.icu_beds<3?'warn':''}">${h.icu_beds}</div><div class="hc-sl">ICU</div></div>
+        <div class="hc-stat"><div class="hc-sv">${h.doctors}</div><div class="hc-sl">Docs</div></div>
+        <div class="hc-stat"><div class="hc-sv">${h.distance}km</div><div class="hc-sl">Dist</div></div>
+        <div class="hc-stat"><div class="hc-sv ok">${h.score}</div><div class="hc-sl">Score</div></div>
+      </div>
+      <div class="hc-ai">🤖 <span class="sev sev-${h.ai?.severity}">${h.ai?.severity||'N/A'}</span> &nbsp;${h.ai?.priority||'GENERAL'}</div>
+      <div class="hc-rec">${h.ai?.recommendation||''}</div>`;
+
+    // Click → Uber-style route
+    card.addEventListener('click',()=>{
+      document.querySelectorAll('.hosp-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      routeTo(h);
+      toast('Route to '+h.name+' loading… 🗺️','ok');
+    });
+    grid.appendChild(card);
+
+    // Leaflet marker
+    const color = isGovt?'#6741d9': i===0?'#E03131':'#868e96';
+    const sz    = i===0?16:11;
+    L.marker([h.lat,h.lng],{icon:makeIcon(color,sz),zIndexOffset:i===0?500:0})
+      .addTo(markerLayer)
+      .bindPopup(`<b>${h.name}</b><br>ICU: ${h.icu_beds} | Docs: ${h.doctors}<br>Score: <b>${h.score}</b>`);
+  });
+}
+
+/* ── Category tabs ── */
+function showCat(cat){
+  currentCat=cat;
+  document.getElementById('tabAll').className ='cat-tab'+(cat==='all' ?' on-all':'');
+  document.getElementById('tabGovt').className='cat-tab'+(cat==='govt'?' on-govt':'');
+  document.getElementById('tabPriv').className='cat-tab'+(cat==='priv'?' on-priv':'');
+  let list=allResults.all||[];
+  if(cat==='govt') list=allResults.govt||[];
+  if(cat==='priv') list=allResults.private||[];
+  renderCards(list);
+  document.getElementById('resCnt').textContent=list.length+' shown · AI sorted';
+}
+
+/* ── Main search ── */
 async function findHosp(){
   const age=parseInt(document.getElementById('age').value)||30;
+  const pri=document.getElementById('pri').value;
   const btn=document.querySelector('.btn-find');
   btn.classList.add('ld');document.getElementById('ov').classList.add('on');
   try{
-    const res=await fetch('http://127.0.0.1:3000/find-hospital',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({emergency_type:selEm,age})});
-    const data=await res.json();
-    document.getElementById('results').classList.add('on');
-    document.getElementById('resCnt').textContent=data.length+' found · AI sorted';
-    const grid=document.getElementById('resGrid');grid.innerHTML='';
-    const tm={'Fastest':'tag-fast','Most Equipped':'tag-equip','Balanced':'tag-bal'};
-    const em=['🥇','🥈','🥉'];
-    data.slice(0,3).forEach((h,i)=>{
-      grid.innerHTML+=`<div class="hosp-card">
-        <div class="hc-top">
-          <div class="hc-rank">${em[i]}</div>
-          <div class="hc-name">${h.name}</div>
-          <span class="hc-tag ${tm[h.ai?.tag]||'tag-bal'}">${h.ai?.tag||'Balanced'}</span>
-        </div>
-        <div class="hc-stats">
-          <div class="hc-stat"><div class="hc-sv ${h.icu_beds>5?'ok':h.icu_beds<3?'warn':''}">${h.icu_beds}</div><div class="hc-sl">ICU</div></div>
-          <div class="hc-stat"><div class="hc-sv">${h.doctors}</div><div class="hc-sl">Docs</div></div>
-          <div class="hc-stat"><div class="hc-sv">${h.distance}km</div><div class="hc-sl">Dist</div></div>
-          <div class="hc-stat"><div class="hc-sv ok">${h.score}</div><div class="hc-sl">Score</div></div>
-        </div>
-        <div class="hc-ai">🤖 <span class="sev sev-${h.ai?.severity}">${h.ai?.severity||'N/A'}</span> &nbsp;${h.ai?.priority||'GENERAL'}</div>
-      </div>`;
-      if(gMap)new google.maps.Marker({position:{lat:h.lat,lng:h.lng},map:gMap,icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:i===0?'#E03131':'#868e96',fillOpacity:1,strokeColor:'white',strokeWeight:2},title:h.name});
+    const res=await fetch('http://127.0.0.1:3000/find-hospital',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({emergency_type:selEm,age,priority:pri})
     });
+    const data=await res.json();
+    allResults=data;
+    document.getElementById('results').classList.add('on');
+    // Leaflet needs to recalculate after container becomes visible
+    if(leafMap){ setTimeout(()=>leafMap.invalidateSize(),50); }
+    document.getElementById('cntAll').textContent =(data.all||[]).length;
+    document.getElementById('cntGovt').textContent=(data.govt||[]).length;
+    document.getElementById('cntPriv').textContent=(data.private||[]).length;
+    showCat('all');
     document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
-    if(gDS&&gDR)navigator.geolocation.getCurrentPosition(p=>{gDS.route({origin:{lat:p.coords.latitude,lng:p.coords.longitude},destination:{lat:data[0].lat,lng:data[0].lng},travelMode:'DRIVING'},(r,s)=>{if(s==='OK')gDR.setDirections(r);});});
-    // update ambulance
-    document.getElementById('ambSt').textContent=data[0].name;
-    document.getElementById('ambDs').textContent=data[0].distance+' km';
-    document.getElementById('ambEt').textContent='~'+Math.ceil(data[0].distance*3)+' min';
-    toast('Best match: '+data[0].name+' (Score '+data[0].score+')','ok');
-  }catch(e){toast('Backend not running on port 3000','err');}
-  finally{btn.classList.remove('ld');document.getElementById('ov').classList.remove('on');}
+    if(data.all&&data.all.length){
+      setTimeout(()=>routeTo(data.all[0]),400);
+      toast('Best: '+data.all[0].name+' (Score '+data.all[0].score+')','ok');
+    }
+  }catch(e){
+    toast('Backend not running on port 3000 — check server.js','err');
+  }finally{
+    btn.classList.remove('ld');document.getElementById('ov').classList.remove('on');
+  }
 }
 window.findHosp=findHosp;
+
+/* ── Init map on DOM ready (no Google callback needed) ── */
+document.addEventListener('DOMContentLoaded', initMap);
+
 function togSb(){document.getElementById('sb').classList.toggle('open');document.getElementById('mobOv').style.display=document.getElementById('sb').classList.contains('open')?'block':'none';}
 function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('mobOv').style.display='none';}
 </script>

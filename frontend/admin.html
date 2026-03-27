@@ -12,13 +12,14 @@
   --green:#2f9e44;--green-bg:#ebfbee;--green-bd:#b2f2bb;
   --amber:#e67700;--amber-bg:#fff9db;--amber-bd:#ffec99;
   --blue:#1971c2;--blue-bg:#e7f5ff;--blue-bd:#a5d8ff;
+  --govt:#6741d9;--govt-bg:#f3f0ff;--govt-bd:#d0bfff;
   --bg:#f1f3f5;--card:#fff;--border:#dee2e6;--border2:#ced4da;
   --text:#212529;--text2:#495057;--text3:#868e96;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
   --sidebar:220px;--r:10px;
   --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 12px rgba(0,0,0,.05);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden}
 
 /* ── SIDEBAR ── */
 .sb{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;z-index:100;overflow-y:auto}
@@ -38,22 +39,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sb-role{font-family:var(--mono);font-size:10px;color:var(--red)}
 
 /* ── MAIN ── */
-.main{margin-left:var(--sidebar);flex:1;padding:20px 24px;min-height:100vh}
+.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));padding:20px 24px;min-height:100vh;box-sizing:border-box}
 .page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .page-hd h1{font-size:22px;font-weight:800}
 .page-hd h1 span{color:var(--red)}
 .btn-logout{padding:7px 14px;background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:7px;font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s}
 .btn-logout:hover{background:var(--red-bd)}
 
-/* Stat row */
+/* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
-.st-r::after{background:var(--red)}.st-g::after{background:var(--green)}.st-b::after{background:var(--blue)}.st-a::after{background:var(--amber)}
+.st-r::after{background:var(--red)}.st-g::after{background:var(--green)}.st-b::after{background:var(--blue)}.st-a::after{background:var(--amber)}.st-v::after{background:var(--govt)}
 .stat-ic{font-size:22px;flex-shrink:0}
 .stat-val{font-size:22px;font-weight:800;line-height:1}
 .stat-lbl{font-size:11px;color:var(--text3);margin-top:2px}
-.c-red{color:var(--red)}.c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-blue{color:var(--blue)}
+.c-red{color:var(--red)}.c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-blue{color:var(--blue)}.c-govt{color:var(--govt)}
 .live-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px}
 .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -84,10 +85,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fld{margin-bottom:12px}
 .fld label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.fld input{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);transition:border-color .12s}
-.fld input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(224,49,49,.08);background:#fff}
+.fld input,.fld select{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);transition:border-color .12s;appearance:none}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(224,49,49,.08);background:#fff}
 .fld input::placeholder{color:#adb5bd}
 .coord-hint{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px}
+
+/* Hospital type toggle */
+.type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.type-btn{padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;background:var(--bg);transition:all .15s;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text2)}
+.type-btn:hover{background:#fff;border-color:var(--border2)}
+.type-btn.on-govt{border-color:var(--govt);background:var(--govt-bg);color:var(--govt)}
+.type-btn.on-priv{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+
 .btn-add{width:100%;padding:10px;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .12s;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn-add:hover{background:var(--red2)}
 .btn-add:disabled{opacity:.6;cursor:not-allowed}
@@ -96,12 +105,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* Hospital list */
-.hosp-list{max-height:340px;overflow-y:auto;padding:8px 12px}
+.hosp-list{max-height:380px;overflow-y:auto;padding:8px 12px}
 .hosp-list::-webkit-scrollbar{width:4px}.hosp-list::-webkit-scrollbar-track{background:var(--bg)}.hosp-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .hi{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:7px;background:var(--bg);transition:all .12s;position:relative}
-.hi:last-child{margin-bottom:0}
-.hi:hover{background:#fff;border-color:var(--border2)}
-.hi-ic{width:32px;height:32px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.hi:last-child{margin-bottom:0}.hi:hover{background:#fff;border-color:var(--border2)}
+.hi-ic{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.hi-ic-govt{background:var(--govt-bg);border:1px solid var(--govt-bd)}
+.hi-ic-priv{background:var(--red-bg);border:1px solid var(--red-bd)}
 .hi-info{flex:1;min-width:0}
 .hi-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hi-meta{font-family:var(--mono);font-size:10px;color:var(--text3)}
@@ -109,6 +119,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .hs{text-align:center}
 .hs-v{font-size:14px;font-weight:800;display:block;color:var(--text)}
 .hs-l{font-size:9px;color:var(--text3);text-transform:uppercase}
+.type-badge{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:6px}
+.tb-govt{background:var(--govt-bg);color:var(--govt);border:1px solid var(--govt-bd)}
+.tb-priv{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd)}
 .btn-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:3px 5px;border-radius:5px;opacity:0;transition:all .12s}
 .hi:hover .btn-del{opacity:1}
 .btn-del:hover{color:var(--red);background:var(--red-bg)}
@@ -116,10 +129,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .empty-ic{font-size:32px;margin-bottom:8px}
 .empty p{font-size:12.5px}
 
+/* Filter tabs in registry */
+.reg-tabs{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.reg-tab{padding:4px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--bg);font-family:var(--font);font-size:11.5px;font-weight:700;cursor:pointer;transition:all .12s;color:var(--text2)}
+.reg-tab.on-all{border-color:var(--text2);background:var(--text);color:#fff}
+.reg-tab.on-govt{border-color:var(--govt);background:var(--govt-bg);color:var(--govt)}
+.reg-tab.on-priv{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+
 /* Activity log */
 .act-row{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--bg)}
-.act-row:last-child{border-bottom:none}
-.act-row:hover{background:var(--bg)}
+.act-row:last-child{border-bottom:none}.act-row:hover{background:var(--bg)}
 .act-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .dot-r{background:var(--red)}.dot-g{background:var(--green)}.dot-a{background:var(--amber)}
 .act-t{font-size:12.5px;font-weight:600}.act-s{font-size:11px;color:var(--text3);margin-top:1px}
@@ -133,9 +152,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .modal-t{font-size:17px;font-weight:800;margin-bottom:6px}
 .modal-s{font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.55}
 .modal-btns{display:flex;gap:8px}
-.btn-cancel{flex:1;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer;transition:all .12s}
-.btn-cancel:hover{border-color:var(--border2)}
-.btn-del-ok{flex:1;padding:10px;background:var(--red);border:none;border-radius:8px;font-family:var(--font);font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .12s}
+.btn-cancel{flex:1;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-weight:600;font-size:13px;cursor:pointer}
+.btn-del-ok{flex:1;padding:10px;background:var(--red);border:none;border-radius:8px;font-family:var(--font);font-weight:700;font-size:13px;color:#fff;cursor:pointer}
 .btn-del-ok:hover{background:var(--red2)}
 
 /* Toast */
@@ -143,21 +161,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .toast.on{transform:translateX(0)}.toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
 .toast-msg{font-size:13px;font-weight:600}
 
-footer{background:var(--card);border-top:1px solid var(--border);padding:12px 24px;font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:var(--sidebar)}
+footer{background:var(--card);border-top:1px solid var(--border);padding:12px 24px;font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:var(--sidebar);width:calc(100% - var(--sidebar));box-sizing:border-box}
 footer em{color:var(--red);font-style:normal;font-weight:700}
 
 @media(max-width:900px){
   :root{--sidebar:0px}
   .sb{transform:translateX(-100%);transition:transform .25s}
   .sb.open{transform:translateX(0)}
-  .main{margin-left:0;padding:16px}
-  footer{margin-left:0}
+  .main{margin-left:0;width:100%;padding:16px}
+  footer{margin-left:0;width:100%}
   .stats{grid-template-columns:1fr 1fr}
   .grid-2,.frow{grid-template-columns:1fr}
   .mob-btn{display:flex!important}
 }
 .mob-btn{display:none;position:fixed;top:12px;left:12px;z-index:200;width:38px;height:38px;background:#fff;border:1px solid var(--border);border-radius:8px;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);font-size:16px}
 .mob-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:99}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -165,10 +184,7 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
 <div class="mob-ov" id="mobOv" onclick="closeSb()"></div>
 
 <aside class="sb" id="sb">
-  <a class="sb-logo" href="#">
-    <div class="sb-logo-ic">🚑</div>
-    <div class="sb-logo-tx">Medi<em>Route</em></div>
-  </a>
+  <a class="sb-logo" href="#"><div class="sb-logo-ic">🚑</div><div class="sb-logo-tx">Medi<em>Route</em></div></a>
   <div class="sb-sec">Navigation</div>
   <a href="#" class="nav-a on"><span class="ic">🏥</span> Hospital Mgmt</a>
   <a href="#addSection" class="nav-a" onclick="closeSb()"><span class="ic">➕</span> Add Hospital</a>
@@ -178,10 +194,7 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
   <a href="#" class="nav-a" onclick="doLogout()"><span class="ic">🚪</span> Logout</a>
   <div class="sb-user" style="margin-top:16px">
     <div class="sb-av" id="adminAv">A</div>
-    <div>
-      <div class="sb-name" id="adminEmail">Admin</div>
-      <div class="sb-role">System Admin</div>
-    </div>
+    <div><div class="sb-name" id="adminEmail">Admin</div><div class="sb-role">System Admin</div></div>
   </div>
 </aside>
 
@@ -194,18 +207,15 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
   <!-- Stats -->
   <div class="stats">
     <div class="stat st-r"><div class="stat-ic">🏥</div><div><div class="stat-val c-red" id="stH">—</div><div class="stat-lbl">Total Hospitals</div></div></div>
+    <div class="stat st-v"><div class="stat-ic">🏛️</div><div><div class="stat-val c-govt" id="stHGovt">—</div><div class="stat-lbl">Govt Hospitals</div></div></div>
     <div class="stat st-g"><div class="stat-ic">🛏️</div><div><div class="stat-val c-green" id="stI">—</div><div class="stat-lbl">Total ICU Beds</div></div></div>
     <div class="stat st-b"><div class="stat-ic">👨‍⚕️</div><div><div class="stat-val c-blue" id="stD">—</div><div class="stat-lbl">Total Doctors</div></div></div>
-    <div class="stat st-a"><div class="stat-ic">⚡</div><div><div class="stat-val c-amber">LIVE</div><div class="stat-lbl"><div class="live-chip" style="margin-top:4px"><div class="live-dot"></div> Firebase</div></div></div></div>
   </div>
 
   <!-- Ambulance dispatch -->
   <div class="amb-bar" id="dispatchSection">
     <div class="amb-lbl"><div class="live-dot"></div> 🚑 Dispatch Monitor</div>
-    <div class="amb-road">
-      <div class="amb-truck">🚑</div>
-      <div class="amb-hosp">🏥</div>
-    </div>
+    <div class="amb-road"><div class="amb-truck">🚑</div><div class="amb-hosp">🏥</div></div>
     <div class="amb-stats">
       <div class="amb-s">Status: <strong id="ambSt">Standby</strong></div>
       <div class="amb-s">ETA: <strong id="ambEt">—</strong></div>
@@ -228,6 +238,14 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
           <div class="fld"><label>ICU Beds</label><input id="hIcu" type="number" min="0" placeholder="e.g. 10"></div>
           <div class="fld"><label>Doctors</label><input id="hDoc" type="number" min="0" placeholder="e.g. 15"></div>
         </div>
+        <!-- NEW: Hospital Type field -->
+        <div class="fld">
+          <label>Hospital Type</label>
+          <div class="type-toggle">
+            <button type="button" class="type-btn on-priv" id="typeBtnPriv" onclick="selectType('private')">🏥 Private</button>
+            <button type="button" class="type-btn" id="typeBtnGovt" onclick="selectType('govt')">🏛️ Government</button>
+          </div>
+        </div>
         <button class="btn-add" id="addBtn" onclick="addHosp()">
           <span class="albl">＋ Add Hospital</span><div class="spin"></div>
         </button>
@@ -236,6 +254,12 @@ footer em{color:var(--red);font-style:normal;font-weight:700}
 
     <div class="panel">
       <div class="panel-hd"><h3>Hospital Registry</h3><span class="phd-badge pb-green" id="regCount">0 Records</span></div>
+      <!-- Filter tabs -->
+      <div class="reg-tabs">
+        <button class="reg-tab on-all" id="rtAll"  onclick="filterReg('all')">All</button>
+        <button class="reg-tab"        id="rtGovt" onclick="filterReg('govt')">🏛️ Govt</button>
+        <button class="reg-tab"        id="rtPriv" onclick="filterReg('priv')">🏥 Private</button>
+      </div>
       <div class="hosp-list" id="hospList">
         <div class="empty"><div class="empty-ic">🏥</div><p>Loading from Firebase…</p></div>
       </div>
@@ -283,25 +307,59 @@ onAuthStateChanged(auth,u=>{
 });
 window.doLogout=()=>signOut(auth).then(()=>{localStorage.clear();location.href='index.html';});
 
-// Live data
+let allEntries=[];
+let currentFilter='all';
+let selType='private';
+
+// ── Hospital type selector ────────────────────────────────────
+window.selectType=function(type){
+  selType=type;
+  document.getElementById('typeBtnPriv').className='type-btn'+(type==='private'?' on-priv':'');
+  document.getElementById('typeBtnGovt').className='type-btn'+(type==='govt'?' on-govt':'');
+};
+
+// ── Live data from Firebase ───────────────────────────────────
 onValue(ref(db,'hospitals'),snap=>{
-  const entries=Object.entries(snap.val()||{});
-  document.getElementById('stH').textContent=entries.length;
-  document.getElementById('stI').textContent=entries.reduce((s,[,h])=>s+(h.icu_beds||0),0);
-  document.getElementById('stD').textContent=entries.reduce((s,[,h])=>s+(h.doctors||0),0);
-  document.getElementById('regCount').textContent=entries.length+' Records';
-  // Ambulance
-  document.getElementById('ambUn').textContent=Math.min(entries.length,5)||2;
+  allEntries=Object.entries(snap.val()||{});
+  const govtCount=allEntries.filter(([,h])=>h.hospital_type==='govt').length;
+
+  document.getElementById('stH').textContent=allEntries.length;
+  document.getElementById('stHGovt').textContent=govtCount;
+  document.getElementById('stI').textContent=allEntries.reduce((s,[,h])=>s+(h.icu_beds||0),0);
+  document.getElementById('stD').textContent=allEntries.reduce((s,[,h])=>s+(h.doctors||0),0);
+  document.getElementById('regCount').textContent=allEntries.length+' Records';
+  document.getElementById('ambUn').textContent=Math.min(allEntries.length,5)||2;
   document.getElementById('ambLs').textContent=new Date().toLocaleTimeString();
-  if(entries.length)document.getElementById('ambSt').textContent=entries[entries.length-1][1].name;
-  // List
+  if(allEntries.length) document.getElementById('ambSt').textContent=allEntries[allEntries.length-1][1].name;
+
+  renderList(currentFilter);
+});
+
+function renderList(filter){
+  currentFilter=filter;
   const list=document.getElementById('hospList');
-  if(!entries.length){list.innerHTML='<div class="empty"><div class="empty-ic">🏥</div><p>No hospitals yet.<br>Add your first using the form.</p></div>';return;}
-  list.innerHTML=entries.map(([key,h],i)=>`
-    <div class="hi" style="animation:fadeIn .3s ${i*.04}s both">
-      <div class="hi-ic">🏥</div>
+  let entries=allEntries;
+  if(filter==='govt')  entries=allEntries.filter(([,h])=>h.hospital_type==='govt');
+  if(filter==='priv')  entries=allEntries.filter(([,h])=>h.hospital_type!=='govt');
+
+  // Tab styles
+  document.getElementById('rtAll').className='reg-tab'+(filter==='all'?' on-all':'');
+  document.getElementById('rtGovt').className='reg-tab'+(filter==='govt'?' on-govt':'');
+  document.getElementById('rtPriv').className='reg-tab'+(filter==='priv'?' on-priv':'');
+
+  if(!entries.length){
+    list.innerHTML='<div class="empty"><div class="empty-ic">🏥</div><p>No hospitals in this category.</p></div>';
+    return;
+  }
+  list.innerHTML=entries.map(([key,h],i)=>{
+    const isGovt=h.hospital_type==='govt';
+    const typeBadge=isGovt
+      ?'<span class="type-badge tb-govt">🏛️ Govt</span>'
+      :'<span class="type-badge tb-priv">🏥 Private</span>';
+    return`<div class="hi" style="animation:fadeIn .3s ${i*.04}s both">
+      <div class="hi-ic ${isGovt?'hi-ic-govt':'hi-ic-priv'}">${isGovt?'🏛️':'🏥'}</div>
       <div class="hi-info">
-        <div class="hi-name">${h.name}</div>
+        <div class="hi-name">${h.name}${typeBadge}</div>
         <div class="hi-meta">${h.lat?.toFixed(4)}, ${h.lng?.toFixed(4)}</div>
       </div>
       <div class="hi-stats">
@@ -309,9 +367,12 @@ onValue(ref(db,'hospitals'),snap=>{
         <div class="hs"><span class="hs-v">${h.doctors}</span><span class="hs-l">Docs</span></div>
       </div>
       <button class="btn-del" onclick="askDel('${key}','${h.name.replace(/'/g,"\\'")}')">🗑</button>
-    </div>`).join('');
-});
+    </div>`;
+  }).join('');
+}
+window.filterReg=renderList;
 
+// ── Add hospital ─────────────────────────────────────────────
 window.addHosp=async()=>{
   const name=document.getElementById('hName').value.trim();
   const lat=parseFloat(document.getElementById('hLat').value);
@@ -322,10 +383,17 @@ window.addHosp=async()=>{
   const btn=document.getElementById('addBtn');
   btn.classList.add('ld');btn.disabled=true;
   try{
-    await push(ref(db,'hospitals'),{name,lat,lng,icu_beds:icu,doctors:doc});
+    await push(ref(db,'hospitals'),{
+      name,lat,lng,
+      icu_beds:icu,
+      doctors:doc,
+      hospital_type:selType   // ← new field
+    });
     ['hName','hLat','hLng','hIcu','hDoc'].forEach(id=>document.getElementById(id).value='');
-    toast('"'+name+'" added successfully','ok');
-    addLog('Hospital added: '+name,'ICU: '+icu+' · Doctors: '+doc,'dot-g');
+    // reset type to private
+    selectType('private');
+    toast('"'+name+'" ('+selType+') added successfully','ok');
+    addLog('Hospital added: '+name,'Type: '+(selType==='govt'?'Government':'Private')+' · ICU: '+icu+' · Docs: '+doc,'dot-g');
     document.getElementById('ambSt').textContent=name;
     document.getElementById('ambEt').textContent='~'+(Math.floor(Math.random()*8+2))+' min';
   }catch(e){toast(e.message,'err');}
@@ -355,6 +423,5 @@ window.toast=function(msg,type){const t=document.getElementById('toast');t.class
 function togSb(){document.getElementById('sb').classList.toggle('open');document.getElementById('mobOv').style.display=document.getElementById('sb').classList.contains('open')?'block':'none';}
 function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('mobOv').style.display='none';}
 </script>
-<style>@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}</style>
 </body>
 </html>
