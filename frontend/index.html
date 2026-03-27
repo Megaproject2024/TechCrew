@@ -1,13 +1,221 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>MediRoute AI - Smart Hospital Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 🔥 STYLING -->
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0d6efd;
+      color: white;
+      padding: 15px 40px;
+    }
+
+    .navbar h2 {
+      margin: 0;
+    }
+
+    .nav-links a {
+      margin-left: 20px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* MAIN */
+    .container {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 10px;
+      width: 220px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #198754;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #157347;
+    }
+
+    /* CARDS */
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      width: 260px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: left;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .loading {
+      font-size: 18px;
+      color: #0d6efd;
+      margin-top: 20px;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 15px;
+      margin-top: 50px;
+      background: #0d6efd;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🔹 NAVBAR -->
+<div class="navbar">
+  <h2>🚑 MediRoute AI</h2>
+  <div class="nav-links">
+    <a onclick="showLogin()">Login</a>
+    <a onclick="showLogin()">Signup</a>
+    <a onclick="logout()">Logout</a>
+  </div>
+</div>
+
+<!-- 🔹 MAIN -->
+<div class="container">
+
+  <!-- 🔐 AUTH SECTION -->
+  <div id="authSection">
+    <h2>Login / Signup</h2>
+
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+
+    <select id="role">
+      <option value="user">User</option>
+      <option value="admin">Hospital Admin</option>
+    </select><br>
+
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <hr>
+
+  <!-- 👤 USER PANEL -->
+  <div id="userPanel" style="display:none;">
+    <h2>Find Best Hospital</h2>
+
+    <select id="emergency">
+      <option value="heart_attack">Heart Attack</option>
+      <option value="accident">Accident</option>
+      <option value="pregnancy">Pregnancy</option>
+    </select><br>
+
+    <input type="number" id="age" placeholder="Enter Age"><br>
+
+    <button onclick="findHospital()">Find Hospital</button>
+
+    <div id="result"></div>
+  </div>
+  <!-- ADD THIS INSIDE BODY (below userPanel button) -->
+
+<div id="map" style="height: 400px; width: 90%; margin: 20px auto; border-radius: 15px;"></div>
+
+  <!-- 🏥 ADMIN PANEL -->
+  <div id="adminPanel" style="display:none;">
+    <h2>Hospital Admin Panel</h2>
+
+    <input id="name" placeholder="Hospital Name"><br>
+    <input id="distance" placeholder="Distance (km)"><br>
+    <input id="traffic" placeholder="Traffic"><br>
+    <input id="icu" placeholder="ICU Beds"><br>
+    <input id="doctors" placeholder="Doctors"><br>
+
+    <select id="type">
+      <option value="private">Private</option>
+      <option value="govt">Government</option>
+    </select><br>
+
+    <button onclick="addHospital()">Add Hospital</button>
+  </div>
+
+</div>
+
+<!-- 🔹 FOOTER -->
+<footer>
+  © 2026 MediRoute AI • Smart Emergency Routing System
+</footer>
+
+<!-- 🔥 FIREBASE (COMPAT VERSION) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAB7KSKUn5HUh2Se-vpri-HGlxGsW9Y2-I",
+  authDomain: "hospitalrouter-2f8f7.firebaseapp.com",
+  databaseURL: "https://hospitalrouter-2f8f7-default-rtdb.firebaseio.com",
+  projectId: "hospitalrouter-2f8f7",
+  storageBucket: "hospitalrouter-2f8f7.firebasestorage.app",
+  messagingSenderId: "897280801527",
+  appId: "1:897280801527:web:12b421b6d04b56936971f2"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// show login helper
+function showLogin() {
+  document.getElementById("authSection").scrollIntoView({behavior:"smooth"});
+}
+</script>
+
+<!-- YOUR JS -->
+<script src="script.js"></script>
+
+</body>
 </html>

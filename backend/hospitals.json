@@ -1,0 +1,31 @@
+{
+  "hospitals": [
+    {
+      "name": "CityCare",
+      "distance": 4,
+      "traffic": 8,
+      "icu_beds": 5,
+      "general_beds": 10,
+      "doctors": 6,
+      "hospital_type": "private"
+    },
+    {
+      "name": "Govt Hospital",
+      "distance": 3,
+      "traffic": 6,
+      "icu_beds": 1,
+      "general_beds": 20,
+      "doctors": 4,
+      "hospital_type": "govt"
+    },
+    {
+      "name": "Metro Hospital",
+      "distance": 6,
+      "traffic": 12,
+      "icu_beds": 3,
+      "general_beds": 15,
+      "doctors": 5,
+      "hospital_type": "private"
+    }
+  ]
+}

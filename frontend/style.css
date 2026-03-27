@@ -1,0 +1,167 @@
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+/* NAVBAR IMPROVED */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 50px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0284c7;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #475569;
+    font-size: 14px;
+}
+
+.nav-links button {
+    padding: 7px 14px;
+    font-size: 14px;
+    border: 1px solid #0284c7;
+    background: transparent;
+    color: #0284c7;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.nav-links button:hover {
+    background: #0284c7;
+    color: white;
+}
+
+/* HERO CLEAN */
+.hero {
+    text-align: center;
+    padding: 50px 20px 30px;
+    background: #f8fafc;
+}
+
+.hero h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.hero p {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 15px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* CARD */
+.card {
+    background: white;
+    width: 350px;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #cbd5f5;
+    border-radius: 6px;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 10px;
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* RESULT */
+.result-box {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f0fdf4;
+    border-left: 5px solid #22c55e;
+    border-radius: 8px;
+}
+
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    background: white;
+    color: #64748b;
+}
+/* RESULT GRID */
+#result {
+    margin-top: 20px;
+}
+
+/* HOSPITAL CARD */
+.hospital-card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 5px solid #22c55e;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* TAG */
+.tag {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #0284c7;
+}
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: linear-gradient(135deg, #c3ecf7, #f5f7fa);
+}
+
+/* GLASS EFFECT */
+.card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+/* BUTTON */
+button {
+  background: linear-gradient(45deg, #0d6efd, #00c6ff);
+  border: none;
+  color: white;
+  border-radius: 8px;
+}
