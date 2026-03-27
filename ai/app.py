@@ -6,16 +6,21 @@ CORS(app)
 
 def ai_decision(data):
     severity = "LOW"
-    if data["emergency_type"] == "heart_attack":
+
+    if data.get("emergency_type") == "heart_attack":
         severity = "HIGH"
+    elif data.get("emergency_type") == "accident":
+        severity = "MEDIUM"
 
     priority = "GENERAL"
     if severity == "HIGH":
         priority = "ICU"
 
     tag = "Balanced"
-    if data["icu_beds"] > 3:
+    if data.get("icu_beds", 0) > 3:
         tag = "Most Equipped"
+    elif data.get("distance", 10) < 3:
+        tag = "Fastest"
 
     return {
         "severity": severity,
@@ -29,4 +34,5 @@ def ai():
     result = ai_decision(data)
     return jsonify(result)
 
-app.run(port=5000)
+if __name__ == "__main__":
+    app.run(port=5000)

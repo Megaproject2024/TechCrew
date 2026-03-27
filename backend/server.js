@@ -1,82 +1,55 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const admin = require("firebase-admin");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ---------------- FIREBASE SETUP ---------------- */
-
-const serviceAccount = require("./serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://hospitalrouter-2f8f7-default-rtdb.firebaseio.com"
-});
-
-const db = admin.database();
-
-/* ---------------- ROOT CHECK ---------------- */
-
-app.get("/", (req, res) => {
-  res.send("🚀 Backend with Firebase is running!");
-});
-
-/* ---------------- FIND HOSPITAL API ---------------- */
-
+// MAIN ROUTE
 app.post("/find-hospital", async (req, res) => {
-  try {
-    const { emergency_type, age } = req.body;
 
-    // Get hospitals from Firebase
-    const snapshot = await db.ref("hospitals").once("value");
-    const hospitalsData = snapshot.val();
+    let hospitals = [
+        { name: "CityCare", distance: 3, icu_beds: 5, doctors: 8, traffic: 3, lat:18.52,lng:73.85 },
+        { name: "Apollo", distance: 6, icu_beds: 9, doctors: 10, traffic: 6, lat:18.53,lng:73.84 },
+        { name: "Ruby Hall", distance: 2, icu_beds: 3, doctors: 6, traffic: 2, lat:18.51,lng:73.86 }
+    ];
 
-    if (!hospitalsData) {
-      return res.json([]);
+    try {
+        // 🔥 CALL AI FOR EACH HOSPITAL
+        for (let h of hospitals) {
+
+            const aiRes = await axios.post("http://127.0.0.1:5000/ai", {
+                emergency_type: req.body.emergency_type,
+                age: req.body.age,
+                distance: h.distance,
+                icu_beds: h.icu_beds,
+                doctors: h.doctors
+            });
+
+            h.ai = aiRes.data;
+
+            // SCORING BASED ON AI
+            let score = 0;
+
+            if (h.ai.severity === "HIGH") score += 50;
+            if (h.ai.priority === "ICU") score += 30;
+            if (h.ai.tag === "Most Equipped") score += 20;
+
+            score += (10 - h.distance);
+
+            h.score = score;
+        }
+
+        // SORT
+        hospitals.sort((a, b) => b.score - a.score);
+
+        res.json(hospitals);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("AI Server Error");
     }
-
-    let hospitals = Object.values(hospitalsData);
-
-    // Call AI for each hospital
-    for (let hospital of hospitals) {
-      try {
-        const aiRes = await axios.post("http://127.0.0.1:5000/ai", {
-          ...hospital,
-          emergency_type,
-          age
-        });
-
-        hospital.priority = aiRes.data.priority;
-        hospital.severity = aiRes.data.severity;
-      } catch (err) {
-        console.log("AI Error:", err.message);
-        hospital.priority = "LOW";
-      }
-    }
-
-    // Sort hospitals (HIGH > MEDIUM > LOW)
-    const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
-
-    hospitals.sort(
-      (a, b) =>
-        (priorityOrder[b.priority] || 0) -
-        (priorityOrder[a.priority] || 0)
-    );
-
-    // Return top 3 hospitals
-    res.json(hospitals.slice(0, 3));
-
-  } catch (err) {
-    console.log("Server Error:", err);
-    res.status(500).send("Server Error");
-  }
 });
 
-/* ---------------- START SERVER ---------------- */
-
-app.listen(3000, () => {
-  console.log("🚀 Backend running on http://127.0.0.1:3000");
-});
+app.listen(3000, () => console.log("🚀 Backend running on 3000"));

@@ -1,130 +1,137 @@
-const auth = firebase.auth();
-const db = firebase.database();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-let map, userMarker, directionsService, directionsRenderer;
+const firebaseConfig = {
+  apiKey: "AIzaSyAB7KSKUn5HUh2Se-vpri-HGlxGsW9Y2-I",
+  authDomain: "hospitalrouter-2f8f7.firebaseapp.com",
+  databaseURL: "https://hospitalrouter-2f8f7-default-rtdb.firebaseio.com"
+};
 
-/* ---------------- MAP INIT ---------------- */
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-function initMap() {
-  const defaultLocation = { lat: 18.5204, lng: 73.8567 }; // Pune
+let hospitals = [];
+let map;
+let markers = [];
+let chart;
 
+/* ================= MAP ================= */
+window.initMap = function () {
   map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 18.5204, lng: 73.8567 },
     zoom: 12,
-    center: defaultLocation,
   });
 
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer();
-  directionsRenderer.setMap(map);
+  loadHospitals();
+};
 
-  // User marker
-  userMarker = new google.maps.Marker({
-    position: defaultLocation,
-    map,
-    title: "You",
-    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+/* ================= LOAD DATA ================= */
+function loadHospitals() {
+  onValue(ref(db, "hospitals"), snap => {
+    const data = snap.val() || {};
+    hospitals = Object.values(data);
+
+    renderMap();
+    renderChart();
   });
 }
 
-/* ---------------- FIND HOSPITAL ---------------- */
-
-async function findHospital() {
-  document.getElementById("result").innerHTML =
-    "<p class='loading'>🤖 AI thinking...</p>";
-
-  const response = await fetch("http://127.0.0.1:3000/find-hospital", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      emergency_type: document.getElementById("emergency").value,
-      age: document.getElementById("age").value
-    })
-  });
-
-  const hospitals = await response.json();
-
-  showHospitals(hospitals);
-  showMapHospitals(hospitals);
-}
-
-/* ---------------- SHOW CARDS ---------------- */
-
-function showHospitals(hospitals) {
-  let html = `<div class="cards">`;
+/* ================= MAP MARKERS ================= */
+function renderMap() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
 
   hospitals.forEach(h => {
-    html += `
-      <div class="card">
-        <h3>🏥 ${h.name}</h3>
-        <p>📍 ${h.distance} km</p>
-        <p>🛏 ICU: ${h.icu_beds}</p>
-        <p>👨‍⚕ ${h.doctors}</p>
-        <p>⚡ ${h.priority}</p>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  document.getElementById("result").innerHTML = html;
-}
-
-/* ---------------- MAP HOSPITALS ---------------- */
-
-function showMapHospitals(hospitals) {
-  hospitals.forEach((h, index) => {
-    const location = {
-      lat: 18.52 + (Math.random() - 0.5) * 0.05,
-      lng: 73.85 + (Math.random() - 0.5) * 0.05
-    };
-
     const marker = new google.maps.Marker({
-      position: location,
+      position: { lat: h.lat, lng: h.lng },
       map,
       title: h.name,
-      icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
     });
+    markers.push(marker);
+  });
+}
 
-    // First hospital = best → show route
-    if (index === 0) {
-      drawRoute(userMarker.getPosition(), location);
-      startAmbulance(userMarker.getPosition(), location);
+/* ================= FIND HOSPITAL ================= */
+window.findHospital = function () {
+  const lat = parseFloat(document.getElementById("lat").value);
+  const lng = parseFloat(document.getElementById("lng").value);
+  const severity = document.getElementById("severity").value;
+
+  if (!lat || !lng) {
+    alert("Enter location");
+    return;
+  }
+
+  let best = null;
+  let bestScore = Infinity;
+
+  hospitals.forEach(h => {
+    const distance = Math.sqrt(
+      Math.pow(lat - h.lat, 2) + Math.pow(lng - h.lng, 2)
+    );
+
+    let score = distance;
+
+    if (severity === "critical") {
+      score -= h.icu_beds * 0.5;
+    }
+
+    if (score < bestScore) {
+      bestScore = score;
+      best = h;
+    }
+  });
+
+  showResult(best);
+};
+
+/* ================= RESULT ================= */
+function showResult(h) {
+  const el = document.getElementById("results");
+
+  el.innerHTML = `
+    <div class="item">
+      <div>
+        <b>${h.name}</b><br>
+        ICU: ${h.icu_beds} | Doctors: ${h.doctors}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("eta").innerText =
+    "ETA: " + (Math.random() * 10 + 2).toFixed(0) + " mins";
+}
+
+/* ================= CHART ================= */
+function renderChart() {
+  const ctx = document.getElementById("icuChart");
+
+  const labels = hospitals.map(h => h.name);
+  const data = hospitals.map(h => h.icu_beds);
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{ label: "ICU Beds", data }]
     }
   });
 }
 
-/* ---------------- DRAW ROUTE ---------------- */
+/* ================= UI ================= */
+window.toggleSidebar = () => {
+  document.getElementById("sidebar").classList.toggle("active");
+};
 
-function drawRoute(origin, destination) {
-  directionsService.route({
-    origin,
-    destination,
-    travelMode: "DRIVING"
-  }, (result, status) => {
-    if (status === "OK") {
-      directionsRenderer.setDirections(result);
-    }
-  });
-}
+window.scrollToSection = (id) => {
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+};
 
-/* ---------------- AMBULANCE SIMULATION ---------------- */
-
-function startAmbulance(start, end) {
-  const ambulance = new google.maps.Marker({
-    position: start,
-    map,
-    icon: "https://maps.google.com/mapfiles/kml/shapes/ambulance.png"
-  });
-
-  let progress = 0;
-
-  const interval = setInterval(() => {
-    progress += 0.02;
-
-    const lat = start.lat() + (end.lat - start.lat()) * progress;
-    const lng = start.lng() + (end.lng - start.lng()) * progress;
-
-    ambulance.setPosition({ lat, lng });
-
-    if (progress >= 1) clearInterval(interval);
-  }, 200);
-}
+window.logout = () => {
+  signOut(auth);
+  window.location = "index.html";
+};
